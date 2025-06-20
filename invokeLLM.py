@@ -21,6 +21,7 @@ def main():
     st.set_page_config(page_title='AssistantAI', page_icon='https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/ChatGPT-Logo.svg/512px-ChatGPT-Logo.svg.png?20240214002031')
 
     st.title('AssistantAI')
+    st.subheader('Como posso ajudar?')
 
     # Verificando se já existem mensagens na sessão
     # Se não, inicializando a lista de mensagens
@@ -31,7 +32,6 @@ def main():
 
     # O código acima é responsável por redesenhar o histórico com mensagens anteriores, ao recarregar a página 
 
-    st.subheader('Como posso ajudar?')
     prompt = st.chat_input('Pergunte alguma coisa sobre os PDFs enviados...', key='chat_input')
 
     if prompt:
