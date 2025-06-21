@@ -1,3 +1,8 @@
-venv
+*venv
 .env
 *.env
+groq_rag_chatbot.py
+invokeLLM.py
+*__pycache__
+backend/text_pdf.py
+backend/chatbot.py
