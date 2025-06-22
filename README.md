@@ -2,7 +2,7 @@
 ## Envie seus PDFs e receba insights incríveis!
 
 ### Selecionar idioma:
-- [English]()
+- [English](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README-en.md)
 - [Português](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README.md)
 
 ---
