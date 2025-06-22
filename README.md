@@ -3,7 +3,7 @@
 
 ### Selecionar idioma:
 - [English]()
-- [Português]()
+- [Português](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README.md)
 
 ---
 
