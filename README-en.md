@@ -1,16 +1,16 @@
 # Assistant AI  
-## Upload your PDFs and receive amazing insights!
+## Upload your PDFs and receive incredible insights!
 
 ### Select language:
-- [English]()
+- [English](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README-en.md)
 - [Português](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README.md)
 
 ---
 
 ### What is AssistantAI?
-AssistantAI is a project I developed, **100% in Python**, to deepen my studies in AI and put into practice my knowledge of Python, Streamlit, and Langchain.
+AssistantAI is a project I developed, **100% in Python**, to deepen my AI studies and put into practice my knowledge of Python, Streamlit, and Langchain.
 
-The chatbot's goal is to answer user questions by providing accurate and insightful responses based on PDF files uploaded by the user.
+The chatbot is designed to answer user questions by providing interesting and accurate insights, based on PDF files uploaded by the user.
 
 ### Technologies used:
 - Streamlit  
@@ -40,8 +40,7 @@ The chatbot's goal is to answer user questions by providing accurate and insight
    pip install -r requirements.txt
    ```
 
-4. Set up environment variables by creating a `.env` file in the root directory, including your Groq Llama3 API key.
-
+4. Set up environment variables by creating a `.env` file in the root of the project with your Groq Llama3 API key.
 5. Run the app with:
 
    ```bash
@@ -50,22 +49,35 @@ The chatbot's goal is to answer user questions by providing accurate and insight
 
 ---
 
-### How was the project developed?
-The chatbot development was divided into three main stages:
-1. Building the application interface  
-2. Creating a RAG system with Langchain to process and chunk the uploaded PDFs  
-3. Building the chatbot system using the Llama3 language model via Groq
+### AssistantAI Use Case
+Once you’ve completed the steps above, here’s a case to try:
+1. Open the *sidebar* and upload a resume PDF or a study guide from an exam you're preparing for.  
+2. Click "Process PDFs" to have the files parsed by the AI.  
+3. If all goes well, a confirmation message will appear.  
+4. Ask anything related to the PDFs and the AI will reply with the insights you need—concise and laser-sharp.
+
+> [!NOTE]
+> Some PDF files may not be processed correctly.  
+> This will be improved in future updates.
 
 ---
 
-### 1. Building the Interface
-I used `Streamlit` to create the interface.  
-The UI is intentionally simple, featuring a *prompt* area for user messages and a *sidebar* for uploading and processing PDFs.  
-After sending a message, the user input and AI response are displayed in a chat-like format.
+### How was the project developed?
+The chatbot development was divided into three stages:
+1. Build the application interface  
+2. Develop a RAG system using Langchain to receive PDFs and chunk them  
+3. Create the chatbot system powered by the Llama3 language model via Groq
+
+---
+
+### 1. Building the interface
+To build the interface, I used `Streamlit`.  
+I kept it elegantly simple: a *prompt* for messages, and a *sidebar* for PDF upload and processing.  
+Once a message is sent, the user's input and the AI’s response are displayed like a proper chat.
 
 ![image](https://github.com/user-attachments/assets/d7a61bca-70ea-466a-9b52-4f2d7fefa243)
 
-To handle chat message flow, I used `st.session_state` from `Streamlit`:
+To ensure messages appear sequentially in a chat format, I used `st.session_state`:
 
 ```python
 if 'messages' not in st.session_state:
@@ -74,35 +86,64 @@ for message in st.session_state.messages:
     st.chat_message(message['role']).markdown(message['content'])
 ```
 
-This logic initializes an empty list of messages if it doesn't exist. As the user interacts with the bot, each message is added to this list and displayed accordingly, based on the *role* (who sent it) and the *content* (user prompt or AI response).
+If no messages exist, it initializes an empty list. Then, as prompts and responses are exchanged, each is stored and displayed based on its *role* (who sent it) and *context* (prompt/response pair).
 
 ---
 
-### 2. Building the RAG System
-For the Retrieval-Augmented Generation (RAG), a temporary file is created for each uploaded PDF. This allows the file to be read and stored in a variable called `loaders`, initially an empty list.
+### 2. Developing the RAG
+The RAG system starts by creating a temporary file for each uploaded PDF in `Streamlit`. These are read and stored in a `loaders` list:
 
-Then, I implemented a function to create a `vectorstore` using `VectorstoreIndexCreator` and `HuggingFaceEmbeddings` from Langchain.
+```python
+def create_vectorstore(uploaded_files):
+    loaders = []
+    for pdf in uploaded_files:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(pdf.read())
+            tmp_path = tmp.name
+        loaders.append(PyPDFLoader(tmp_path))
+```
 
-Chunks are generated from the PDF and used as context for the Llama3 language model.
+Still within `create_vectorstore`, we build the `vectorstore` using `VectorstoreIndexCreator` and `HuggingFaceEmbeddings`, both from Langchain:
+
+```python
+index = VectorstoreIndexCreator(
+    embedding=HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2'),
+    text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+).from_loaders(loaders)
+
+return index.vectorstore
+```
+
+These chunks are the tasty snacks the Llama3 model digests to provide contextual answers.
 
 ---
 
-### 3. Building the Chatbot Structure
-Once the RAG system was ready, I built the conversation function. This function sets up a chain that allows the user to interact with the LLM using the extracted chunks as context.
+### 3. Building the chatbot structure
+With the RAG phase complete, we create the chatbot conversation function—where the user talks with the LLM, fueled by the PDF chunks.
 
-I used `ChatGroq` from Langchain along with the *Llama3* model.
+Using `ChatGroq` from Langchain and the *Llama3* model, I set up a simple yet elegant prompt template, composed of *system* (instructions for the model) and *user* (the question):
 
-The conversation chain uses a template with:
-- a *system* message: defining the assistant’s behavior and tone  
-- a *user* message: containing the user’s question
+```python
+system_template = '''You are a friendly and professional AI assistant named Assistant. You answer in Brazilian Portuguese.
+You always respond clearly, objectively, and accurately to users' questions. You answer based on the context: {context}'''
 
-I also implemented `ConversationBufferMemory`, enabling the bot to remember previous messages and maintain the conversation context.
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", system_template),
+    ("user", "{question}")
+])
+```
 
-After these steps, the final integrations were made into the interface, enabling PDF upload and LLM-powered chat.
+One nifty feature is the `ConversationBufferMemory`, allowing the assistant to *remember* the chat flow:
+
+```python
+memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+```
+
+Once these parts are done, they are integrated into the Streamlit interface—where PDF processing and chatting with the LLM unfold harmoniously.
 
 ---
 
-### 👨🏻‍💻 Author  
+### 👨🏻‍💻 Author
 **Luís Henrique**  
 UX/UI Designer and Dev passionate about AI, Computer Vision, and User Experience.
 
