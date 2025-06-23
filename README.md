@@ -44,6 +44,18 @@ A proposta do chatbot é responder perguntas do usuário, fornecendo insights in
       streamlit run .\app.py
       ```
 ---
+### Case de uso do AssistantAI
+Um case que você pode fazer, após realizar as etapas anteriores, consiste em:
+1. Acesse a *sidebar* e vnvie um PDF de currículo, ou até mesmo apostila de algum concurso que esteja fazendo;
+2. Após o envio, clique em Processar PDFs, para que o(s) arquivo(s) seja(m) processado(s) pela IA;
+3. Se tudo ocorreu certo, você receberá uma mensagem indicando que os arquivos foram processados com sucesso.
+4. Após isso, faça qualquer pergunta relacionada ao(s) PDF(s) para a IA, e ela responderá, trazendo os insights necessários e de forma precisa.
+
+> [!NOTE] 
+> Alguns arquivos PDF podem não ser processados corretamente.
+> Esse ponto será corrigido em futuras atualizações do projeto.
+
+---
 
 ### Como o projeto foi desenvolvido?
 O desenvolvimento do chatbot foi dividido em 3 etapas:
@@ -67,27 +79,62 @@ if 'messages' not in st.session_state:
 for message in st.session_state.messages:
         st.chat_message(message['role']).markdown(message['content'])
 ```
-Basicamente, se não houvesse nenhuma mensagem no `session_state`, ele cria uma lista vazia e, com base o usuário vai enviando prompts e a IA respondendo, as mensagens são armazenadas nesta mesma lista vazia criada.
+Basicamente, se não houver nenhuma mensagem no `session_state`, ele cria uma lista vazia e, com base o usuário vai enviando prompts e a IA respondendo, as mensagens são armazenadas nesta mesma lista vazia criada.
 
 A partir do momento que uma nova mensagem é salva na lista `st.session_state.messages`, ela é exibida na tela, respeitando o *role*, ou seja, quem enviou a mensagem, e o *context*, que consiste no prompt do usuário e na resposta gerada pela IA.
 
+---
+
 ### 2. Desenvolvendo o RAG
 Para o RAG, criei um sistema onde é criado um arquivo temporário do PDF enviado pelo usuário pela interface em `Streamlit`, para assim, ter acesso ao arquivo e a partir disso, fazer a leitura do PDF e armazenar o conteúdo lido em uma variável `loaders`, que é uma lista vazia.
-Com isso, parti para a criação de uma function para criar um `vectorstore`, utilizando o `VectorstoreIndexCreator` e o `HuggingFaceEmbeddings`, ambos importados do `Langchain`.
+```python
+def create_vectorstore(uploaded_files):
+    loaders = []
+    for pdf in uploaded_files:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(pdf.read())
+            tmp_path = tmp.name
+        loaders.append(PyPDFLoader(tmp_path))
+```
+
+Com isso, ainda nessa função `create_vectorstore` parti para a criação de uma function para criar um `vectorstore`, utilizando o `VectorstoreIndexCreator` e o `HuggingFaceEmbeddings`, ambos importados do `Langchain`.
 A partir desse função, são criados os chunks do arquivo PDF passado pelo usuário. Esses chunks serão utilizados para "alimentar" o modelo de linguagem do Llama3.
+```python
+index=VectorstoreIndexCreator(
+        embedding=HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2'),
+        text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    ).from_loaders(loaders)
+
+    return index.vectorstore
+```
+---
 
 ### 3. Criação da estrutura de chatbot
 Com a etapa de RAG concluída, partimos então para a criação da function de conversação com o chatbot, onde criaremos uma chain que permitirá uma conversa do usuário com a LLM alimentada pelos chunks do PDF.
-Para isso, utilizei o `ChatGroq`, ou apenas `Groq`, importando também do `Langchain`, e o modelo de linguagem *Llama3*.
-O sistema em si da conversação foi simples, feito a partir de um template com *system* - onde passo informações de como o modelo deve responder, e baseado em que - e *user*, onde temos a *question* do usuário.
-Uma funcionalidade interessante implementada na function de conversação foi o `ConversationBufferMemory`, que permite que o modelo tenha uma memória de conversa. Ou seja, ela consegue responder várias mensagens no prompt com memória das mensagens anteriores.
+Para isso, utilizei o `ChatGroq`, ou apenas `Groq`, importado também do `Langchain`, e o modelo de linguagem *Llama3*.
 
+O sistema em si da conversação foi simples, feito a partir de um template com *system* - onde passo informações de como o modelo deve responder, e baseado em que - e *user*, onde temos a *question* do usuário.
+```python
+system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde em Português-BR.
+Você sempre responde de forma clara, objetiva e precisa as dúvidas dos usuários. Você responde com base no contexto: {context}'''
+
+prompt_template = ChatPromptTemplate.from_messages([
+        ("system", system_template),
+        ("user", "{question}")
+        ])
+```
+
+Uma funcionalidade interessante implementada na function de conversação foi o `ConversationBufferMemory`, que permite que o modelo tenha uma memória de conversa. Ou seja, ela consegue responder várias mensagens no prompt com memória das mensagens anteriores.
+```python
+memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+```
 Após essas etapas, foram feitas as devidas implementações na interface da aplicação, onde são inseridos o processamento dos PDFs e a conversação com a LLM.
 
 ---
 
 ### 👨🏻‍💻 Autor
 Luís Henrique
+
 UX/UI Designer e Dev apaixonado por IA, Visão Computacional e Experiência do Usuário.
 
 [Conecte-se comigo no LinkedIn](https://www.linkedin.com/in/luishenrique-ia/)
