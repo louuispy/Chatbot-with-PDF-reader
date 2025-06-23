@@ -46,7 +46,7 @@ A proposta do chatbot é responder perguntas do usuário, fornecendo insights in
 ---
 ### Case de uso do AssistantAI
 Um case que você pode fazer, após realizar as etapas anteriores, consiste em:
-1. Acesse a *sidebar* e vnvie um PDF de currículo, ou até mesmo apostila de algum concurso que esteja fazendo;
+1. Acesse a *sidebar* e envie um PDF de currículo, ou até mesmo apostila de algum concurso que esteja fazendo;
 2. Após o envio, clique em Processar PDFs, para que o(s) arquivo(s) seja(m) processado(s) pela IA;
 3. Se tudo ocorreu certo, você receberá uma mensagem indicando que os arquivos foram processados com sucesso.
 4. Após isso, faça qualquer pergunta relacionada ao(s) PDF(s) para a IA, e ela responderá, trazendo os insights necessários e de forma precisa.
