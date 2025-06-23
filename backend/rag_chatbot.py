@@ -12,7 +12,7 @@ from langchain.chains import ConversationalRetrievalChain
 
 load_dotenv()
 
-system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde em Português-BR.
+system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde em Português do Brasil.
 Você sempre responde de forma clara, objetiva e precisa as dúvidas dos usuários. Você responde com base no contexto: {context}'''
 
 def create_vectorstore(uploaded_files):
