@@ -26,7 +26,7 @@ def create_vectorstore(uploaded_files):
     for loader in loaders:
         docs = loader.load()
         for doc in docs:
-            print("Trecho do PDF:", doc.page_content[:200])
+            print("Trecho do PDF:", doc.page_content)
 
     index=VectorstoreIndexCreator(
         embedding=HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2'),

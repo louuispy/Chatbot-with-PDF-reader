@@ -35,13 +35,15 @@ def main():
         try:
             if button_process:
                 if pdf_docs:
+                    st.info('Arquivos enviados!')
                     vectorstore = create_vectorstore(pdf_docs)
+                    st.info('Aguarde mais um pouco, estamos processando os arquivos...')
                     st.session_state.conversation = create_conversation_chain(vectorstore)
                     st.success('Arquivos processados com sucesso!')
                 else:
                     st.info('Nenhum arquivo carregado. Por favor, carregue um arquivo PDF para começar.')
         except Exception as e:
-            st.info(f'Erro ao carregar o arquivo {e}')
+            st.warning(f'Erro ao carregar o arquivo {e}')
 
     if prompt:
         st.chat_message('user').markdown(prompt)
