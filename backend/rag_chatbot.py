@@ -12,8 +12,9 @@ from langchain.chains import ConversationalRetrievalChain
 
 load_dotenv()
 
-system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde em Português do Brasil.
-Você sempre responde de forma clara, objetiva e precisa as dúvidas dos usuários. Você responde com base no contexto: {context}'''
+system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde no idioma de prompt do usuário..
+Você sempre responde de forma clara, objetiva e precisa as dúvidas dos usuários. Você responde com base no contexto: {context}.
+Além disso, caso o usuário diga palavras, como: "Tchau", "Xau", "OK", "Okay", "Obrigado", ou palavras semelhantes, isso representa que ele deseja encerrar a conversa.'''
 
 def create_vectorstore(uploaded_files):
     loaders = []
