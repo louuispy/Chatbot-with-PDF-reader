@@ -53,7 +53,7 @@ def main():
                     st.info('Arquivos enviados!')
                     vectorstore = create_vectorstore(pdf_docs)
                     st.info('Aguarde mais um pouco, estamos processando os arquivos...')
-                    st.session_state.conversation = create_conversation_chain(vectorstore, GROQ_API_KEY)
+                    st.session_state.conversation = create_conversation_chain(vectorstore, st.session_state.GROQ_API_KEY)
                     st.success('Arquivos processados com sucesso!')
                 else:
                     st.info('Nenhum arquivo carregado. Por favor, carregue um arquivo PDF para começar.')
@@ -67,7 +67,7 @@ def main():
         if st.session_state.conversation is None:
             st.info("Por favor, carregue e processe seus PDFs clicando em 'Processar PDFs' antes de perguntar.")
         else:
-            response = st.session_state.conversation.invoke({'question': prompt})
+            response = st.session_state.conversation.invoke({'question': prompt, "chat_history": st.session_state.messages})
             st.chat_message('assistant').markdown(response['answer'])
             st.session_state.messages.append({'role': 'assistant', 'content': response['answer']})
 

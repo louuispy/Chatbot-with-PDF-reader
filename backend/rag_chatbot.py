@@ -45,8 +45,7 @@ def create_conversation_chain(vectorstore, key):
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
     prompt_template = ChatPromptTemplate.from_messages([
-        ("system", system_template),
-        ("user", "{question}")
+        system_template
         ])
 
     conversation_chain = ConversationalRetrievalChain.from_llm(
