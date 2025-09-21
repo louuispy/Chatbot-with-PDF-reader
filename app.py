@@ -23,6 +23,21 @@ def main():
     prompt = st.chat_input('Pergunte alguma coisa sobre os PDFs enviados...', key='chat_input')
     
     with st.sidebar:
+        st.subheader('Insira sua chave de API Groq')
+        GROQ_API_KEY = st.text_input('Insira sua chave de API Groq', key='groq_api_key', type='password')
+        button_process_api = st.button('Enviar chave de API')
+
+        try:
+            if button_process_api:
+                if GROQ_API_KEY:
+                    st.info('Chave de API enviada!')
+                    st.session_state.GROQ_API_KEY = GROQ_API_KEY
+                    
+                else:
+                    st.warning('Nenhuma chave de API inserida! Por favor, insira uma chave de API.')
+        except Exception as e:
+            st.warning(f'Erro ao enviar a chave de API {e}')
+
         st.subheader('Seus arquivos')
         pdf_docs = st.file_uploader(
             label='Carregue seus arquivos PDF',
@@ -30,15 +45,15 @@ def main():
             accept_multiple_files=True
         )
 
-        button_process = st.button('Processar PDFs')
+        button_process_pdf = st.button('Processar PDFs')
 
         try:
-            if button_process:
+            if button_process_pdf:
                 if pdf_docs:
                     st.info('Arquivos enviados!')
                     vectorstore = create_vectorstore(pdf_docs)
                     st.info('Aguarde mais um pouco, estamos processando os arquivos...')
-                    st.session_state.conversation = create_conversation_chain(vectorstore)
+                    st.session_state.conversation = create_conversation_chain(vectorstore, GROQ_API_KEY)
                     st.success('Arquivos processados com sucesso!')
                 else:
                     st.info('Nenhum arquivo carregado. Por favor, carregue um arquivo PDF para começar.')

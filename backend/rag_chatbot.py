@@ -10,11 +10,9 @@ from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 
-load_dotenv()
-
 system_template = '''Você é um assistente de inteligência artificial simpático e profissional chamado Assistant. Você responde no idioma de prompt do usuário..
 Você sempre responde de forma clara, objetiva e precisa as dúvidas dos usuários. Você responde com base no contexto: {context}.
-Além disso, caso o usuário diga palavras, como: "Tchau", "Xau", "OK", "Okay", "Obrigado", ou palavras semelhantes, isso representa que ele deseja encerrar a conversa.'''
+Além disso, caso o usuário diga palavras, como: "Tchau", "Xau", "OK", "Okay", "Obrigado", ou palavras semelhantes, isso representa que ele deseja encerrar a conversa, portanto, você deve responder: De nada! Gostaria de mais alguma ajuda?'''
 
 def create_vectorstore(uploaded_files):
     loaders = []
@@ -24,10 +22,10 @@ def create_vectorstore(uploaded_files):
             tmp_path = tmp.name
         loaders.append(PyPDFLoader(tmp_path))
     
-    for loader in loaders:
-        docs = loader.load()
-        for doc in docs:
-            print("Trecho do PDF:", doc.page_content)
+    #for loader in loaders:
+        #docs = loader.load()
+        #for doc in docs:
+            #print("Trecho do PDF:", doc.page_content)
 
     index=VectorstoreIndexCreator(
         embedding=HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2'),
@@ -37,11 +35,13 @@ def create_vectorstore(uploaded_files):
     return index.vectorstore
 
 
-def create_conversation_chain(vectorstore):
+def create_conversation_chain(vectorstore, key):
+    key = key.strip()
     llm = ChatGroq(
-        groq_api_key=os.environ["GROQ_API_KEY"],
-        model_name="llama3-8b-8192"
+        groq_api_key= str(key),
+        model_name="openai/gpt-oss-20b"
     )
+    
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
     prompt_template = ChatPromptTemplate.from_messages([
