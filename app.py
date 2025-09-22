@@ -14,8 +14,6 @@ def main():
     st.title('AssistantAI')
     st.subheader('Como posso ajudar?')
 
-
-    
     with st.sidebar:
         st.subheader('Insira sua chave de API Groq')
         GROQ_API_KEY = st.text_input('Insira sua chave de API Groq', key='groq_api_key', type='password')
@@ -45,9 +43,12 @@ def main():
                 if pdf_docs:
                     st.info('Arquivos enviados!')
                     all_files_text = text.process_files(pdf_docs)
+
                     st.info('Aguarde mais um pouco, estamos processando os arquivos...')
+                    chunks = text.create_text_chunks(all_files_text)
+                    
                     st.success('Arquivos processados com sucesso!')
-                    print(all_files_text)
+                 
                 else:
                     st.info('Nenhum arquivo carregado. Por favor, carregue um arquivo PDF para começar.')
         except Exception as e:
