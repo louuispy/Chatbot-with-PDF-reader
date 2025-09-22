@@ -1,7 +1,7 @@
 import warnings
 import logging
 import streamlit as st
-from utils import text
+from utils import process_embeddings, text
 #from rag_chatbot import create_vectorstore, create_conversation_chain
 
 def main():
@@ -26,6 +26,7 @@ def main():
                     st.session_state.GROQ_API_KEY = GROQ_API_KEY
                 else:
                     st.warning('Nenhuma chave de API inserida! Por favor, insira uma chave de API.')
+
         except Exception as e:
             st.warning(f'Erro ao enviar a chave de API {e}')
 
@@ -46,7 +47,8 @@ def main():
 
                     st.info('Aguarde mais um pouco, estamos processando os arquivos...')
                     chunks = text.create_text_chunks(all_files_text)
-                    
+                    vectorstore = process_embeddings.create_vectorstore(chunks)
+                    print(vectorstore)
                     st.success('Arquivos processados com sucesso!')
                  
                 else:
