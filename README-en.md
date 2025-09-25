@@ -1,150 +1,281 @@
-# Assistant AI  
-## Upload your PDFs and receive incredible insights!
+# Assistant AI
+## Upload your PDFs and receive amazing insights!
 
 ### Select language:
 - [English](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README-en.md)
-- [Portuguese](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README.md)
+- [Português](https://github.com/louuispy/Chatbot-with-PDF-reader/blob/main/README.md)
 
 ---
+
+<img width="1897" height="941" alt="image" src="https://github.com/user-attachments/assets/b5eb5530-50a7-41db-bc50-b398f708dcaa" />
 
 ### What is AssistantAI?
-AssistantAI is a project I developed, **100% in Python**, to deepen my AI studies and put into practice my knowledge of Python, Streamlit, and Langchain.
+AssistantAI consists of a project developed by me, **100% in Python**, to deepen my studies in AI and put my Python, Streamlit, and Langchain knowledge into practice.
 
-The chatbot is designed to answer user questions by providing interesting and accurate insights, based on PDF files uploaded by the user.
+The main proposal of the chatbot is to answer user questions, providing interesting and accurate insights, based on PDF files uploaded by the user themselves to the AI. However, you can also use it to answer more open questions, without the need to upload PDFs.
 
 ### Technologies used:
-- Streamlit  
-- Langchain  
-- Groq API (Llama3)  
-- HuggingFace Transformers  
-- PyPDFLoader  
+- Streamlit
+- Langchain
+- Groq API (openai/gpt-oss-20b)
+- HuggingFace Instruct Embeddings
+- FAISS
+- PdfReader
 
-### How to use it?
-1. Clone this repository to your local machine  
-2. Create and activate a virtual environment with Python
-
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate
-   ```
-
-   For Linux or MacOS:
-
-   ```bash
-   source venv/bin/activate
-   ```
-
-3. Install the required libraries using `requirements.txt`
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Set up environment variables by creating a `.env` file in the root of the project with your Groq Llama3 API key.
-5. Run the app with:
-
-   ```bash
-   streamlit run .\app.py
-   ```
-
+### How to use?
+  1. Clone this repository to your machine using git
+    ```
+    https://github.com/louuispy/Chatbot-with-PDF-reader.git
+    ```
+  
+  2. Create a virtual environment with Python and activate it
+      
+     ```
+     python -m venv venv
+     venv\Scripts\activate 
+     ```
+     
+     In the case of Linux or MacOS, activate the venv like this:
+     
+     ```
+     source venv/bin/activate
+     ```
+   3. Install the libraries present in `requirements.txt` using `pip install`
+      
+      ```
+      pip install -r requirements.txt
+      ```
+   4. Configure the environment variables by adding a `.env` in the project root, along with your Groq Llama3 API key.
+   5. Run the app with
+      ```
+      streamlit run .\app.py
+      ```
 ---
+### Use case for AssistantAI
+A use case you can do, after performing the previous steps, consists of:
+1. Access the *sidebar* and upload a resume PDF, or even a study guide for some contest you are taking;
+2. After uploading, click on Process PDFs, so that the file(s) is/are processed by the AI;
+3. If everything went well, you will receive a message indicating that the files were processed successfully.
+4. After that, ask any question related to the PDF(s) to the AI, and it will respond, bringing the necessary insights and in an accurate manner.
 
-### AssistantAI Use Case
-Once you’ve completed the steps above, here’s a case to try:
-1. Open the *sidebar* and upload a resume PDF or a study guide from an exam you're preparing for.  
-2. Click "Process PDFs" to have the files parsed by the AI.  
-3. If all goes well, a confirmation message will appear.  
-4. Ask anything related to the PDFs and the AI will reply with the insights you need—concise and laser-sharp.
-
-> [!NOTE]
-> Some PDF files may not be processed correctly.  
-> This will be improved in future updates.
+> [!NOTE] 
+> Some PDF files may not be processed correctly, this can happen for various reasons, one of them is because the model cannot extract the texts from the PDF files.
+> This point will be fixed in future project updates.
 
 ---
 
 ### How was the project developed?
-The chatbot development was divided into three stages:
-1. Build the application interface  
-2. Develop a RAG system using Langchain to receive PDFs and chunk them  
-3. Create the chatbot system powered by the Llama3 language model via Groq
+The development of the chatbot was divided into 5 major stages:
+  1. Develop the application interface;
+  2. Develop a PDF reading system, information extraction, and chunk creation;
+  3. Develop a vectorstore system to process the chunks, convert them to embeddings, and then store them
+  4. Develop the chatbot system using a language model API `openai/gpt-oss-20b`, through Groq, passing the vectorstore to the chatbot.
+  5. Develop a free chain so that the user can converse without the need to upload PDFs.
 
 ---
 
-### 1. Building the interface
-To build the interface, I used `Streamlit`.  
-I kept it elegantly simple: a *prompt* for messages, and a *sidebar* for PDF upload and processing.  
-Once a message is sent, the user's input and the AI’s response are displayed like a proper chat.
+### 1. Developing the interface
+To develop the interface, I used `Streamlit`.
+I chose to create a relatively simple interface, just with the *prompt* for the user to send messages, and a *sidebar* for uploading and processing PDFs.
+After sending a message, the user's messages and then the AI's will be displayed on the screen.
 
-![image](https://github.com/user-attachments/assets/d7a61bca-70ea-466a-9b52-4f2d7fefa243)
+<img width="1474" height="853" alt="image" src="https://github.com/user-attachments/assets/c066b09c-78fe-46b1-998c-a963427aa599" />
 
-To ensure messages appear sequentially in a chat format, I used `st.session_state`:
-
+To make the interface display one message after another in chat format, I used `st.session_state` from `Streamlit`.
 ```python
 if 'messages' not in st.session_state:
-    st.session_state.messages = []
+        st.session_state.messages = []
 for message in st.session_state.messages:
-    st.chat_message(message['role']).markdown(message['content'])
+        st.chat_message(message['role']).markdown(message['content'])
 ```
+Basically, if there are no messages in `session_state`, it creates an empty list, and as the user sends prompts and the AI responds, the messages are stored in this same empty list created.
 
-If no messages exist, it initializes an empty list. Then, as prompts and responses are exchanged, each is stored and displayed based on its *role* (who sent it) and *context* (prompt/response pair).
+From the moment a new message is saved in the `st.session_state.messages` list, it is displayed on the screen, respecting the *role*, i.e., who sent the message, and the *content*, which consists of the user's prompt and the response generated by the AI.
+
+Another extremely important point of the interface is its sidebar, where you basically put your Groq API key and then choose the function that the chatbot will perform in the conversation.
+
+<img width="333" height="517" alt="image" src="https://github.com/user-attachments/assets/1d62a061-5be8-4d16-ae36-795b6bbe3e15" />
+
+```python
+with st.sidebar:
+        st.subheader('Enter your Groq API key')
+        input_api_key = st.text_input('Enter your Groq API key', key='groq_api_key', type='password')
+        button_process_api = st.button('Submit API key')
+
+        st.markdown('---')
+
+        try:
+            if button_process_api:
+                if input_api_key:
+                    st.info('API key submitted!')
+                    st.session_state.api_key = input_api_key
+                else:
+                    st.warning('No API key entered! Please enter an API key.')
+
+        except Exception as e:
+            st.warning(f'Error submitting the API key {e}')
+
+
+        st.subheader('What task do you want AssistantAI to perform?')
+        button_pdf = st.button('Answer PDF questions')
+        button_conversation_without_pdf = st.button('Free conversation')
+
+```
 
 ---
 
-### 2. Developing the RAG
-The RAG system starts by creating a temporary file for each uploaded PDF in `Streamlit`. These are read and stored in a `loaders` list:
+### 2. Developing the PDF reader
+For the PDF reading system and chunk creation, I used `PdfReader`, and divided this stage into two small tasks. The first would be to develop a function for reading PDFs, and the second would be a function to create/divide the PDF texts into chunks.
 
+#### 2.1 - Reading PDFs
 ```python
-def create_vectorstore(uploaded_files):
-    loaders = []
-    for pdf in uploaded_files:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(pdf.read())
-            tmp_path = tmp.name
-        loaders.append(PyPDFLoader(tmp_path))
+def process_files(files):
+    text = ""
+
+    for file in files:
+        pdf = PdfReader(file)
+
+        for page in pdf.pages:
+            text += page.extract_text()
+
+    return text
 ```
 
-Still within `create_vectorstore`, we build the `vectorstore` using `VectorstoreIndexCreator` and `HuggingFaceEmbeddings`, both from Langchain:
-
+#### 2.2 - Chunk creation (with CharacterTextSplitter)
 ```python
-index = VectorstoreIndexCreator(
-    embedding=HuggingFaceEmbeddings(model_name='all-MiniLM-L12-v2'),
-    text_splitter=RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-).from_loaders(loaders)
+def create_text_chunks(text):
+    text_splitter = CharacterTextSplitter(
+        separator='\n',
+        chunk_size=1500,
+        chunk_overlap=300,
+        length_function=len
+    )
 
-return index.vectorstore
+    chunks = text_splitter.split_text(text)
+
+    return chunks
 ```
+---
 
-These chunks are the tasty snacks the Llama3 model digests to provide contextual answers.
+### 3. Developing the vectorstore
+Now that we have the chunks, we need to pass them to a function that processes them into embeddings and stores them in a vectorstore. This vectorstore can be either local or in memory. In this case, I chose to do it in memory.
+For this stage, `HuggingFaceInstructEmbeddings` was used to "create" the embeddings based on a model from the HuggingFace community, and `FAISS` for creating the vectorstore itself.
+```python
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceInstructEmbeddings
+
+def create_vectorstore(chunks):
+    embeddings = HuggingFaceInstructEmbeddings(model_name='intfloat/multilingual-e5-base')
+    vectorstore = FAISS.from_texts(texts = chunks, embedding=embeddings)
+
+    return vectorstore
+```
 
 ---
 
-### 3. Building the chatbot structure
-With the RAG phase complete, we create the chatbot conversation function—where the user talks with the LLM, fueled by the PDF chunks.
+### 4. Developing a conversation chain for the LLM model to converse with the PDFs
+At this point, we already have a function to read PDFs, create chunks, and process chunks into embeddings. Now, we just need to pass these embeddings to the LLM model to read and respond to the user.
 
-Using `ChatGroq` from Langchain and the *Llama3* model, I set up a simple yet elegant prompt template, composed of *system* (instructions for the model) and *user* (the question):
+For this, we will use Groq, since it has no costs and also has great LLM models, such as the model used in the project.
 
 ```python
-system_template = '''You are a friendly and professional AI assistant named Assistant. You answer in Brazilian Portuguese.
-You always respond clearly, objectively, and accurately to users' questions. You answer based on the context: {context}'''
+def create_conversation_chain(vectorstore, key):
+    llm = ChatGroq(
+        api_key=key,
+        temperature=1,
+        model="openai/gpt-oss-20b"
+    )
+    
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-prompt_template = ChatPromptTemplate.from_messages([
-    ("system", system_template),
-    ("user", "{question}")
-])
+    conversation_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vectorstore.as_retriever(),
+        memory=memory
+    )
+
+    return conversation_chain
+
 ```
 
-One nifty feature is the `ConversationBufferMemory`, allowing the assistant to *remember* the chat flow:
+An interesting feature implemented in the conversation function was `ConversationBufferMemory`, which allows the model to have conversation memory. That is, it can respond to multiple messages in the prompt with memory of previous messages.
 
 ```python
 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 ```
 
-Once these parts are done, they are integrated into the Streamlit interface—where PDF processing and chatting with the LLM unfold harmoniously.
+---
+
+### 5. Creating the free conversation chain
+Now that we basically have the entire chatbot structure ready, we just need to use the previous function as a base to create the new free conversation function, without passing the vectorstore to the model.
+
+In this case, I chose to add a template for this specific chain.
+
+```python
+template = ChatPromptTemplate.from_messages([
+        ("system", """You are a friendly and professional artificial intelligence assistant. *Your name is Assistant.* You respond in the language of the user's prompt. You always respond clearly, objectively, and accurately to users' questions. You respond based on the context provided by the users. Additionally, if the user says words like: "Bye", "See you", "OK", "Okay", "Thank you", or similar words, this means they want to end the conversation, so you should respond: You're welcome! Would you like any more help?"""),
+        ("user", "{history}, {input}")])
+
+def create_conversation_without_pdf(key):
+    llm = ChatGroq(
+        api_key=key,
+        temperature=1,
+        model="openai/gpt-oss-20b",
+    )
+
+    conversation_chain_without_pdf = ConversationChain(
+        llm=llm,
+        prompt=template,
+        verbose=True,
+        memory=ConversationBufferMemory()
+        )
+
+    return conversation_chain_without_pdf
+```
+
+After these stages, we make the proper implementations in the application interface, where the PDF processing and conversation with the LLM are inserted. In this stage, Streamlit's session state is used extensively, since there are many stages that are activated with button clicks. For example:
+
+```python
+if (button_pdf):
+            st.session_state.mode = 'pdf'
+
+        if st.session_state.mode=='pdf':
+            st.subheader('Your files')
+            pdf_docs = st.file_uploader(
+                label='Upload your PDF files',
+                type='pdf',
+                accept_multiple_files=True
+            )
+
+            button_process_pdf = st.button('Process PDFs')
+
+            try:
+                if button_process_pdf:
+                    if pdf_docs:
+                        st.session_state.pdf_docs = pdf_docs
+                        st.info('Files uploaded!')
+                        all_files_text = text.process_files(st.session_state.pdf_docs)
+
+                        st.info('Wait a little longer, we are processing the files...')
+                        chunks = text.create_text_chunks(all_files_text)
+                        vectorstore = process_embeddings.create_vectorstore(chunks)
+                        st.session_state.conversation_chain = chatbot.create_conversation_chain(vectorstore, st.session_state.api_key)
+
+                        st.success('Files processed successfully!')
+                    else:
+                        st.info('No file loaded. Please upload a PDF file to start.')
+            except Exception as e:
+                st.warning(f'Error loading the file {e}')
+```
+
+This specific code snippet occurs if the user clicks the conversation with PDF upload button.
+Since Streamlit works with page reloads when buttons are clicked, and the button click state is true only at the moment of the click, and after the reload it becomes false, it is necessary to create a session state that stores information that the button was clicked or not. With this, we can use this session state information as a conditional to execute the rest of the script.
 
 ---
 
 ### 👨🏻‍💻 Author
-**Luís Henrique**  
-UX/UI Designer and Dev passionate about AI, Computer Vision, and User Experience.
+Luís Henrique
+
+Data Scientist | UX/UI Designer 
 
 [Connect with me on LinkedIn](https://www.linkedin.com/in/luishenrique-ia/)
