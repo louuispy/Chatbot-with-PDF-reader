@@ -7,6 +7,8 @@
 
 ---
 
+<img width="1897" height="941" alt="image" src="https://github.com/user-attachments/assets/b5eb5530-50a7-41db-bc50-b398f708dcaa" />
+
 ### O que é o AssistantAI?
 O AssistantAI consiste em um projeto desenvolvido por mim, **100% em Python**, para aprofundar meus estudos em IA e colocar em prática meus conhecimentos de Python, Streamlit e Langchain.
 
@@ -77,7 +79,7 @@ Para desenvolver a interface, utilizei `Streamlit`.
 Optei por criar uma interface relativamente simples, apenas com o *promp*, para o usuário mandar as mensagens, e uma *sidebar*, para o envio e processamento de PDFs.
 Após o envio de uma mensagem, serão exibidos na tela as mensagens do user, e logo em seguida da IA.
 
-![image](https://github.com/user-attachments/assets/d7a61bca-70ea-466a-9b52-4f2d7fefa243)
+<img width="1474" height="853" alt="image" src="https://github.com/user-attachments/assets/c066b09c-78fe-46b1-998c-a963427aa599" />
 
 Para que a interface exibisse uma mensagem após a outra, em formato de chat, utilizei o `st.session_state`, do `Streamlit`.
 ```python
@@ -91,6 +93,8 @@ Basicamente, se não houver nenhuma mensagem no `session_state`, ele cria uma li
 A partir do momento que uma nova mensagem é salva na lista `st.session_state.messages`, ela é exibida na tela, respeitando o *role*, ou seja, quem enviou a mensagem, e o *context*, que consiste no prompt do usuário e na resposta gerada pela IA.
 
 Outro ponto extremamente importante da interface é a sua sidebar, onde basicamente você vai colocar sua API do Groq e então escolher a função que o chatbot irá exercer na conversação.
+
+<img width="333" height="517" alt="image" src="https://github.com/user-attachments/assets/1d62a061-5be8-4d16-ae36-795b6bbe3e15" />
 
 ```python
 with st.sidebar:
@@ -117,6 +121,7 @@ with st.sidebar:
         button_conversation_without_pdf = st.button('Conversa livre')
 
 ```
+
 
 ---
 
