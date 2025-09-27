@@ -1,7 +1,7 @@
 import warnings
 import logging
 import streamlit as st
-from utils import process_embeddings, text, chatbot
+from utils import process_embeddings, text, chatbot, youtube_transcription
 
 def main():
 
@@ -35,6 +35,9 @@ def main():
     if 'pdf_docs' not in st.session_state:
         st.session_state.pdf_docs = []
 
+    if 'youtube_link' not in st.session_state:
+        st.session_state.youtube_link = None
+
     for message in st.session_state.messages:
         st.chat_message(message['role']).markdown(message['content'])
 
@@ -42,8 +45,6 @@ def main():
         st.subheader('Insira sua chave de API Groq')
         input_api_key = st.text_input('Insira sua chave de API Groq', key='groq_api_key', type='password')
         button_process_api = st.button('Enviar chave de API')
-
-        st.markdown('---')
 
         try:
             if button_process_api:
@@ -56,15 +57,24 @@ def main():
         except Exception as e:
             st.warning(f'Erro ao enviar a chave de API {e}')
 
+        st.markdown('---')
 
         st.subheader('Qual tarefa você deseja que o AssistantAI faça?')
-        button_pdf = st.button('Tirar dúvidas de PDFs')
+        button_pdf = st.button('Tirar dúvidas sobre seus PDFs')
+        button_youtube = st.button('Tirar dúvidas sobre vídeos do YouTube')
         button_conversation_without_pdf = st.button('Conversa livre')
 
         st.markdown('---')
 
         if (button_pdf):
             st.session_state.mode = 'pdf'
+
+        elif (button_youtube):
+            st.session_state.mode = 'yt'
+
+        elif (button_conversation_without_pdf):
+            st.session_state.mode = 'free'
+
 
         if st.session_state.mode=='pdf':
             st.subheader('Seus arquivos')
@@ -92,15 +102,56 @@ def main():
                     else:
                         st.info('Nenhum arquivo carregado. Por favor, carregue um arquivo PDF para começar.')
             except Exception as e:
-                st.warning(f'Erro ao carregar o arquivo {e}')
+                st.warning(f'Erro ao carregar o arquivo: {e}')
+            
+        elif st.session_state.mode == 'yt':
+            st.subheader('URL do vídeo do YouTube')
+            url = st.text_input('Insira a URL do vídeo do Youtube', key='youtube_input_link', type='default')
+            button_process_youtube = st.button('Enviar URL')
 
-        if (button_conversation_without_pdf):
-            st.session_state.mode = 'free'
+            try:
+                if button_process_youtube:
+                    if url:
+                        st.session_state.youtube_link = url
+                        st.info('URL enviado!')
+                        transcription_video = youtube_transcription.transcript_video(st.session_state.youtube_link)
+                        
+
+                        st.info('Aguarde mais um pouco, estamos acessando o vídeo...')
+                        chunks = text.create_text_chunks(transcription_video)
+                        print('criou os chunks')
+
+                        vectorstore = process_embeddings.create_vectorstore(chunks)
+                        st.info('Analisando a transcrição do vídeo')
+                      
+                        st.session_state.conversation_chain = chatbot.create_conversation_chain(vectorstore, st.session_state.api_key)
+                      
+                        st.success('Vídeo analisado com sucesso!')
+                    else:
+                        st.info('Nenhuma URL foi digitada. Por favor, digite a URL do vídeo do YouTube desejado para começar.')
+            except Exception as e:
+                st.warning(f'Erro ao carregar a URL: {e}')
+        
+        elif st.session_state.mode == 'free':
             st.session_state.conversation_without_pdf = chatbot.create_conversation_without_pdf(st.session_state.api_key)
 
             st.subheader('Envie sua mensagem e converse com o Assistant!')
     
     if (user_question) and (st.session_state.mode=='pdf'):
+        st.chat_message('user').markdown(user_question)
+        st.session_state.messages.append({'role': 'user', 'content': user_question})
+        with st.spinner("Analisando sua pergunta..."):
+            try:
+                response = st.session_state.conversation_chain(user_question)
+
+            
+                st.chat_message('assistant').markdown(response['answer'])
+                st.session_state.messages.append({'role': 'assistant', 'content': response['answer']})
+            except Exception as e:
+                st.error(f'Erro: {e}')
+
+
+    elif (user_question) and (st.session_state.mode=='yt'):
         st.chat_message('user').markdown(user_question)
         st.session_state.messages.append({'role': 'user', 'content': user_question})
         with st.spinner("Analisando sua pergunta..."):
