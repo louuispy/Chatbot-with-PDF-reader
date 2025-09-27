@@ -14,6 +14,10 @@ AssistantAI consists of a project developed by me, **100% in Python**, to deepen
 
 The main proposal of the chatbot is to answer user questions, providing interesting and accurate insights, based on PDF files uploaded by the user themselves to the AI. However, you can also use it to answer more open questions, without the need to upload PDFs.
 
+>[!NOTE]
+> **NEW FEATURE:** Now you can talk with YouTube videos! Send the URL of the video and ask questions to LLM about the video!
+
+
 ### Technologies used:
 - Streamlit
 - Langchain
