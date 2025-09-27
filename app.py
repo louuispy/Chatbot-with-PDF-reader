@@ -133,7 +133,8 @@ def main():
                 st.warning(f'Erro ao carregar a URL: {e}')
         
         elif st.session_state.mode == 'free':
-            st.session_state.conversation_without_pdf = chatbot.create_conversation_without_pdf(st.session_state.api_key)
+            if st.session_state.conversation_without_pdf == None:
+                st.session_state.conversation_without_pdf = chatbot.create_conversation_without_pdf(st.session_state.api_key)
 
             st.subheader('Envie sua mensagem e converse com o Assistant!')
     
@@ -157,16 +158,15 @@ def main():
         with st.spinner("Analisando sua pergunta..."):
             try:
                 response = st.session_state.conversation_chain(user_question)
-
-            
                 st.chat_message('assistant').markdown(response['answer'])
                 st.session_state.messages.append({'role': 'assistant', 'content': response['answer']})
             except Exception as e:
                 st.error(f'Erro: {e}')
 
     elif (user_question) and (st.session_state.mode=='free'):
-        st.chat_message('user').markdown(user_question)
         st.session_state.messages.append({'role': 'user', 'content': user_question})
+        st.chat_message('user').markdown(user_question)
+
         with st.spinner("Analisando sua pergunta..."):
             try:
                 conversation_with_no_pdf = st.session_state.conversation_without_pdf(user_question)
@@ -175,6 +175,7 @@ def main():
 
             except Exception as e:
                 st.error(f'Erro: {e}')
+            
 
 if __name__ == "__main__":
 
