@@ -14,6 +14,9 @@ O AssistantAI consiste em um projeto desenvolvido por mim, **100% em Python**, p
 
 A proposta principal do chatbot é responder perguntas do usuário, fornecendo insights interessantes e precisos, com base em arquivos PDF enviados pelo próprio usuário para a IA, no entanto, você pode também utilizá-lo para responder perguntas mais livres, sem necessidade do envio de PDFs.
 
+>[NOTE!]
+> **ATUALIZAÇÃO:** Agora você pode conversar com vídeos do YouTube! Envie a URL e tire suas dúvidas sobre o vídeo enviado.
+
 ### Tecnologias utilizadas:
 - Streamlit
 - Langchain
@@ -21,6 +24,7 @@ A proposta principal do chatbot é responder perguntas do usuário, fornecendo i
 - HuggingFace Instruct Embeddings
 - FAISS
 - PdfReader
+- YouTubeTranscriptApi
 
 ### Como utilizar?
   1. Faça um clone desse repositório git para a sua máquina
